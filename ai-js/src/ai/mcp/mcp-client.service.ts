@@ -5,7 +5,7 @@ import {
   OnModuleDestroy,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { EventSource } from "eventsource";
+import EventSource from "eventsource";
 
 /**
  * MCP Tool 定义

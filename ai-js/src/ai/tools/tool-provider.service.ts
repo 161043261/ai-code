@@ -173,7 +173,7 @@ programming concepts, or job-related topics. The input should be a clear search 
 
     try {
       // 尝试使用 bind 绑定工具
-      const modelWithTools = chatModel.bind({
+      const modelWithTools = chatModel.withConfig({
         tools: toolDefinitions.map((tool) => ({
           type: "function" as const,
           function: {
