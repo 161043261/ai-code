@@ -1,6 +1,6 @@
 package com.github.tianchenghang.ai;
 
-import com.github.tianchenghang.ai.tools.InterviewQuestionTool;
+import com.github.tianchenghang.ai.tools.CodeQuestionTool;
 import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
@@ -33,7 +33,7 @@ public class AiCodeServiceFactory {
             .chatMemory(chatMemory) // 会话记忆
             .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10)) // 每个会话独立存储
             .contentRetriever(retriever) // 检索增强生成
-            .tools(new InterviewQuestionTool()) // 工具
+            .tools(new CodeQuestionTool()) // 工具
             .toolProvider(mcpToolProvider) // mcp 工具
             .build();
     return aiService;

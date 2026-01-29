@@ -11,29 +11,29 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 @Slf4j
-public class InterviewQuestionTool {
+public class CodeQuestionTool {
   @Tool(
-      name = "InterviewQuestionTool",
+      name = "CodeQuestionTool",
       value =
           """
-      Retrieves relevant interview questions from mianshiya.com based on a keyword.
-      Use this tool when the user asks for interview questions about computer network.
+      Retrieves relevant code questions based on a keyword.
+      Use this tool when the user asks for code questions.
       The input should be a clear search keyword.
       """)
   public String searchInterviewQuestions(@P(value = "the keyword to search") String keyword) {
     var questions = new ArrayList<String>();
     var encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
-    var url = "https://mianshiya.com/search/all?searchText=" + encodedKeyword;
+    var url = "https://leetcode.cn/search/?q=" + encodedKeyword;
     log.info(
-        "Retrieves relevant interview questions from mianshiya.com based on keyword: {}", keyword);
+        "Retrieves relevant code questions from leetcode.cn based on keyword: {}", keyword);
     Document doc;
     try {
       doc = Jsoup.connect(url).userAgent("Mozilla/5.0").timeout(5000).get();
     } catch (IOException err) {
-      log.error("Error connecting to mianshiya.com", err);
+      log.error("Error connecting to leetcode.cn", err);
       return err.getMessage();
     }
-    var elems = doc.select(".ant-table-cell > a");
+    var elems = doc.select("a");
     elems.forEach(el -> questions.add(el.text().trim()));
     return String.join("\n", questions);
   }
