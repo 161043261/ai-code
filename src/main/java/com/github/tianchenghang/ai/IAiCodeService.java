@@ -1,10 +1,13 @@
 package com.github.tianchenghang.ai;
 
 import com.github.tianchenghang.ai.guardrail.SafeInputGuardrail;
+import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.guardrail.InputGuardrails;
 import java.util.List;
+import reactor.core.publisher.Flux;
 
 // @AiService
 @InputGuardrails({SafeInputGuardrail.class})
@@ -20,4 +23,7 @@ public interface IAiCodeService {
 
   @SystemMessage(fromResource = "system-prompt.txt")
   Result<String> chatWithRag(String userMessage);
+
+  @SystemMessage(fromResource = "system-prompt.txt")
+  Flux<String> chatStream(@MemoryId int memoryId, @UserMessage String message);
 }

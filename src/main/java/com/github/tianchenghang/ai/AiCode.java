@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class AiCode {
-  @Resource private ChatModel chatModel;
+  @Resource private ChatModel qwenChatModel;
 
   private static final String SYSTEM_MESSAGE =
       """
@@ -24,16 +24,16 @@ public class AiCode {
   public String chatWithMessage(String message) {
     var sysMessage = SystemMessage.from(SYSTEM_MESSAGE);
     var userMessage = UserMessage.from(message);
-    var resp = chatModel.chat(sysMessage, userMessage);
+    var resp = qwenChatModel.chat(sysMessage, userMessage);
     var aiMessage = resp.aiMessage();
-    log.info("aiMessage: {}", aiMessage.toString());
+    log.info("AI message: {}", aiMessage.toString());
     return aiMessage.text();
   }
 
   public String chatWithMessage(UserMessage userMessage) {
-    var resp = chatModel.chat(userMessage);
+    var resp = qwenChatModel.chat(userMessage);
     var aiMessage = resp.aiMessage();
-    log.info("aiMessage: {}", aiMessage.toString());
+    log.info("AI message: {}", aiMessage.toString());
     return aiMessage.text();
   }
 }
