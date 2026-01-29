@@ -11,16 +11,23 @@ git worktree add ../ai-code main
 ```bash
 #!/bin/bash
 
-echo "Running Maven code formatter..."
+echo "run mvn fmt:format"
 
 mvn com.spotify.fmt:fmt-maven-plugin:format -q
 
-# Check if formatting made any changes
 if ! git diff --quiet; then
-  echo "Code was reformatted. Adding changes to commit..."
+  echo "run git add -u"
   git add -u
 fi
 
-echo "Formatting complete."
+echo "format ok"
 exit 0
 ```
+
+- 多模态
+- 系统提示词
+- 会话记忆
+- 结构化输出 (JSON)
+  - 大模型 JSON schema
+  - Prompt + JSON Mode
+  - Prompt
