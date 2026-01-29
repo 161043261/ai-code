@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 export interface McpTool {
   name: string;
   description: string;
-  inputSchema: Record<string, unknown>;
+  execute: (params: Record<string, unknown>) => Promise<string>;
 }
 
 export interface McpClientConfig {
@@ -56,16 +56,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
         name: 'web_search',
         description:
           'Search the web for real-time information using BigModel web search',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'The search query',
-            },
-          },
-          required: ['query'],
-        },
+        execute: this.executeTool.bind(this),
       },
     ];
   }
@@ -85,12 +76,13 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       );
     }
     if (toolName === 'web_search') {
-      return this.executeWebSearch(String(params.query));
+      return this.executeWebSearch(params);
     }
     throw new Error(`Tool ${toolName} not implemented`);
   }
 
-  private async executeWebSearch(query: string) {
+  private async executeWebSearch(params: Record<string, unknown>) {
+    const query = String(params.query);
     if (!query) {
       return 'Search query is required';
     }
