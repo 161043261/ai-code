@@ -14,7 +14,7 @@ public class AiController {
   @Resource private IAiCodeService aiCodeService;
 
   @GetMapping("/chat")
-  public Flux<ServerSentEvent> chat(int memoryId, String message) {
+  public Flux<ServerSentEvent> chat(String memoryId, String message) {
     return aiCodeService
         .chatStream(memoryId, message)
         .map(chunk -> ServerSentEvent.<String>builder().data(chunk).build());
