@@ -32,21 +32,28 @@ public class AiCodeServiceTest {
 
   @Test
   void chatWithRag() {
-
+    var res = aiCodeService.chatWithRag("JS 错误处理方式?");
+    var content = res.content();
+    var sources = res.sources();
+    System.out.println(content);
+    System.out.println(sources);
   }
 
   @Test
   void chatWithTools() {
-
+    var res = aiCodeService.chat("有哪些高频的计算机网络面试题?");
+    System.out.println(res);
   }
 
   @Test
   void chatWithMcp() {
-
+    var res = aiCodeService.chat("联网搜索深圳有哪些美食?");
+    System.out.println(res);
   }
 
   @Test
   void chatWithGuardrail() {
-
+    var res = aiCodeService.chat("Damn, motherfucker");
+    System.out.println(res);
   }
 }
