@@ -5,7 +5,6 @@ import {
   OnModuleDestroy,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import EventSource from "eventsource";
 
 /**
  * MCP Tool 定义
@@ -28,7 +27,7 @@ export interface McpClientConfig {
 
 /**
  * MCP (Model Context Protocol) 服务
- * 通过 SSE 连接真正的 MCP 服务
+ * 直接使用 BigModel API 实现 web search 功能
  */
 @Injectable()
 export class McpClientService implements OnModuleInit, OnModuleDestroy {
@@ -36,13 +35,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
   private apiKey: string;
   private tools: McpTool[] = [];
   private initialized = false;
-  private eventSource: EventSource | null = null;
   private config: McpClientConfig;
-  private messageId = 0;
-  private pendingRequests: Map<
-    number,
-    { resolve: (value: unknown) => void; reject: (error: Error) => void }
-  > = new Map();
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -51,6 +44,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
 
     if (!this.apiKey) {
       this.logger.warn("BIGMODEL_API_KEY not configured, MCP client disabled");
+      this.setupFallbackTools();
       return;
     }
 
@@ -61,123 +55,15 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       logResponses: true,
     };
 
-    await this.connect();
+    // 直接使用 fallback 模式，避免 SSE 连接问题
+    this.setupFallbackTools();
+    this.logger.log("MCP Client initialized with fallback mode");
   }
 
   async onModuleDestroy() {
-    this.disconnect();
-  }
-
-  /**
-   * 连接到 MCP 服务
-   */
-  private async connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.eventSource = new EventSource(this.config.sseUrl);
-
-        this.eventSource.onopen = () => {
-          this.logger.log(`MCP Client connected: ${this.config.key}`);
-          this.initialized = true;
-          this.fetchTools().then(resolve).catch(reject);
-        };
-
-        this.eventSource.onmessage = (event) => {
-          this.handleMessage(event.data);
-        };
-
-        this.eventSource.onerror = (error) => {
-          this.logger.error(`MCP SSE error: ${JSON.stringify(error)}`);
-          if (!this.initialized) {
-            reject(new Error("Failed to connect to MCP service"));
-          }
-        };
-
-        // 超时处理
-        setTimeout(() => {
-          if (!this.initialized) {
-            this.disconnect();
-            this.logger.warn("MCP connection timeout, using fallback mode");
-            this.setupFallbackTools();
-            resolve();
-          }
-        }, 10000);
-      } catch (error) {
-        this.logger.error(`MCP connection failed: ${error.message}`);
-        this.setupFallbackTools();
-        resolve();
-      }
-    });
-  }
-
-  /**
-   * 断开连接
-   */
-  private disconnect(): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
-    this.pendingRequests.clear();
-  }
-
-  /**
-   * 处理 SSE 消息
-   */
-  private handleMessage(data: string): void {
-    try {
-      const message = JSON.parse(data);
-
-      if (this.config.logResponses) {
-        this.logger.debug(`MCP Response: ${JSON.stringify(message)}`);
-      }
-
-      // 处理工具列表响应
-      if (message.result?.tools) {
-        this.tools = message.result.tools.map(
-          (tool: Record<string, unknown>) => ({
-            name: tool.name as string,
-            description: tool.description as string,
-            inputSchema: tool.inputSchema as Record<string, unknown>,
-          }),
-        );
-        this.logger.log(`Loaded ${this.tools.length} MCP tools`);
-      }
-
-      // 处理工具调用响应
-      if (message.id && this.pendingRequests.has(message.id)) {
-        const { resolve, reject } = this.pendingRequests.get(message.id)!;
-        this.pendingRequests.delete(message.id);
-
-        if (message.error) {
-          reject(new Error(message.error.message || "Unknown MCP error"));
-        } else {
-          resolve(message.result);
-        }
-      }
-    } catch (error) {
-      this.logger.error(`Failed to parse MCP message: ${error.message}`);
-    }
-  }
-
-  /**
-   * 获取工具列表
-   */
-  private async fetchTools(): Promise<void> {
-    // MCP tools/list 请求
-    const request = {
-      jsonrpc: "2.0",
-      id: ++this.messageId,
-      method: "tools/list",
-    };
-
-    if (this.config.logRequests) {
-      this.logger.debug(`MCP Request: ${JSON.stringify(request)}`);
-    }
-
-    // 注意：实际的 MCP SSE 协议可能需要通过 HTTP POST 发送请求
-    // 这里使用 fallback 模式
-    this.setupFallbackTools();
+    // 清理资源
+    this.tools = [];
+    this.initialized = false;
   }
 
   /**
@@ -224,7 +110,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Tool not found: ${toolName}`);
     }
 
-    if (this.config.logRequests) {
+    if (this.config?.logRequests) {
       this.logger.log(
         `Executing MCP tool: ${toolName} with params: ${JSON.stringify(params)}`,
       );
@@ -244,6 +130,10 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
   private async executeWebSearch(query: string): Promise<string> {
     if (!query) {
       return "Search query is required";
+    }
+
+    if (!this.apiKey) {
+      return "BIGMODEL_API_KEY not configured";
     }
 
     try {
@@ -283,7 +173,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
         choices?: Array<{ message?: { content?: string } }>;
       };
 
-      if (this.config.logResponses) {
+      if (this.config?.logResponses) {
         this.logger.debug(`Web search response: ${JSON.stringify(data)}`);
       }
 

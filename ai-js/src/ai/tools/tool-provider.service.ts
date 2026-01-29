@@ -172,17 +172,19 @@ programming concepts, or job-related topics. The input should be a clear search 
     });
 
     try {
-      // 尝试使用 bind 绑定工具
-      const modelWithTools = chatModel.withConfig({
-        tools: toolDefinitions.map((tool) => ({
-          type: "function" as const,
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.parameters,
-          },
-        })),
-      });
+      // 使用 bind 绑定工具 (使用类型断言绕过类型检查)
+      const toolsConfig = toolDefinitions.map((tool) => ({
+        type: "function" as const,
+        function: {
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.parameters,
+        },
+      }));
+
+      const modelWithTools = chatModel.bind({
+        tools: toolsConfig,
+      } as Record<string, unknown>);
 
       const response = await modelWithTools.invoke(fullMessages);
 

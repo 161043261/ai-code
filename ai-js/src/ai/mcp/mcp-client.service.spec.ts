@@ -44,7 +44,7 @@ describe("McpClientService", () => {
       expect(service.isInitialized()).toBe(true);
     });
 
-    it("should skip initialization without API key", async () => {
+    it("should initialize with fallback tools without API key", async () => {
       // Create a new service without API key
       mockConfigService.get.mockImplementation(
         (key: string, defaultValue?: string) => {
@@ -63,7 +63,9 @@ describe("McpClientService", () => {
       const noKeyService = module.get<McpClientService>(McpClientService);
       await noKeyService.onModuleInit();
 
-      expect(noKeyService.isInitialized()).toBe(false);
+      // Should still be initialized with fallback tools
+      expect(noKeyService.isInitialized()).toBe(true);
+      expect(noKeyService.getTools().length).toBeGreaterThan(0);
     });
   });
 

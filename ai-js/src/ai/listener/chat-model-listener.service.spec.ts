@@ -72,7 +72,7 @@ describe("ChatModelListenerService", () => {
     });
 
     it("should include timestamp in context", () => {
-      let capturedContext: ChatModelRequestContext | null = null;
+      let capturedContext: ChatModelRequestContext | undefined = undefined;
       const listener: ChatModelListener = {
         onRequest: (ctx) => {
           capturedContext = ctx;
@@ -82,13 +82,14 @@ describe("ChatModelListenerService", () => {
       service.addListener(listener);
       service.onRequest({ messages: [], modelName: "test" });
 
-      expect(capturedContext?.timestamp).toBeInstanceOf(Date);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.timestamp).toBeInstanceOf(Date);
     });
   });
 
   describe("onResponse", () => {
     it("should calculate latency", async () => {
-      let capturedContext: ChatModelResponseContext | null = null;
+      let capturedContext: ChatModelResponseContext | undefined = undefined;
       const listener: ChatModelListener = {
         onResponse: (ctx) => {
           capturedContext = ctx;
@@ -104,11 +105,12 @@ describe("ChatModelListenerService", () => {
 
       service.onResponse(requestId, { content: "response", modelName: "test" });
 
-      expect(capturedContext?.latencyMs).toBeGreaterThan(0);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.latencyMs).toBeGreaterThan(0);
     });
 
     it("should pass content to listeners", () => {
-      let capturedContext: ChatModelResponseContext | null = null;
+      let capturedContext: ChatModelResponseContext | undefined = undefined;
       const listener: ChatModelListener = {
         onResponse: (ctx) => {
           capturedContext = ctx;
@@ -123,13 +125,14 @@ describe("ChatModelListenerService", () => {
         modelName: "test",
       });
 
-      expect(capturedContext?.content).toBe("AI response");
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.content).toBe("AI response");
     });
   });
 
   describe("onError", () => {
     it("should pass error to listeners", () => {
-      let capturedContext: ChatModelErrorContext | null = null;
+      let capturedContext: ChatModelErrorContext | undefined = undefined;
       const listener: ChatModelListener = {
         onError: (ctx) => {
           capturedContext = ctx;
@@ -142,7 +145,8 @@ describe("ChatModelListenerService", () => {
       const error = new Error("Test error");
       service.onError(requestId, { error, modelName: "test" });
 
-      expect(capturedContext?.error).toBe(error);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.error).toBe(error);
     });
   });
 
