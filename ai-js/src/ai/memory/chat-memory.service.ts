@@ -1,5 +1,5 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {BaseMessage} from "@langchain/core/messages";
+import { Injectable, Logger } from '@nestjs/common';
+import { BaseMessage } from '@langchain/core/messages';
 
 @Injectable()
 export class ChatMemoryService {
