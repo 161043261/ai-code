@@ -1,9 +1,10 @@
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ConfigService } from '@nestjs/config';
 import { ChatOllama } from '@langchain/ollama';
 import { ChatOpenAI } from '@langchain/openai';
 
+@Injectable()
 export class ChatModelService implements OnModuleInit {
   private readonly logger = new Logger(ChatModelService.name);
   private chatModel: BaseChatModel;

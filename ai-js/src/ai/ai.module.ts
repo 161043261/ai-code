@@ -11,13 +11,13 @@ import { SafeInputGuardrail } from './guardrail/safe-input-guardrail';
 import { ChatMemoryService } from './memory/chat-memory.service';
 import { ChatModelListenerService } from './listener/chat-model-listener.service';
 import { StructuredOutputService } from './structured-output/structured-output.service';
+import { AiController } from './ai.controller';
+import { AiService } from './ai.service';
 
 @Module({
-  controllers: [
-    // AiController
-  ],
+  controllers: [AiController],
   providers: [
-    // AiService,
+    AiService,
     ChatModelService,
     RagService,
     VectorStoreService,
@@ -30,7 +30,7 @@ import { StructuredOutputService } from './structured-output/structured-output.s
     StructuredOutputService,
   ],
   exports: [
-    // AiService,
+    AiService,
     ChatModelListenerService,
     StructuredOutputService,
     ToolProviderService,

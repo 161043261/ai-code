@@ -14,7 +14,6 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { dirname, join } from 'path';
 import { existsSync, readdirSync } from 'node:fs';
 import { mkdirSync, readFileSync } from 'fs';
-import { resolve } from 'node:url';
 
 interface StoredDocument {
   id: string;
@@ -32,11 +31,12 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
   private sqlSnippets: string[] = [];
 
   constructor(private readonly configService: ConfigService) {
-    const sql1 = readFileSync(resolve(__dirname, './sql/1.sql'), 'utf-8');
-    const sql2 = readFileSync(resolve(__dirname, './sql/2.sql'), 'utf-8');
+    this.logger.debug('Current working directory:', process.cwd());
+    const sql1 = readFileSync(join(process.cwd(), './sql/1.sql'), 'utf-8');
+    const sql2 = readFileSync(join(process.cwd(), './sql/2.sql'), 'utf-8');
     this.sqlSnippets.push(sql1, sql2);
     this.logger.warn(
-      `${__filename} is DEPRECATED, use ${resolve(__dirname, './rag.service')} instead`,
+      "'vector-store.service' is DEPRECATED, use 'rag.service' instead",
     );
   }
 
@@ -44,7 +44,7 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
     const provider = this.configService.get<string>('LLM_PROVIDER', 'ollama');
     this.dbPath = this.configService.get<string>(
       'VECTOR_DB_PATH',
-      resolve(__dirname, './data/vectors.db'),
+      join(process.cwd(), './data/vectors.db'),
     );
 
     if (provider === 'ollama') {
@@ -109,6 +109,11 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
       this.db.exec(
         'CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents (created_at);',
       );
+
+      this.loadDocumentsFromDirectory(
+        join(process.cwd(), './resources/docs/base'),
+      );
+
       const { count } = this.db
         .prepare('SELECT COUNT(*) as count FROM documents;')
         .get() as { count: number };
@@ -128,6 +133,7 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
     }
     const docs: Document[] = [];
     const files = readdirSync(docsPath);
+    // this.logger.debug(`Load documents ${files.join(",")} from directory ${docsPath}`)
     for (const file of files) {
       if (file.endsWith('.md') || file.endsWith('.txt')) {
         const filePath = join(docsPath, file);

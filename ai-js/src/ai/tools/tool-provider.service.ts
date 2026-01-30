@@ -111,7 +111,7 @@ export class ToolProviderService {
     ];
     const requestId = this.listenerService.onRequest({
       messages: fullMessages,
-      modelName: chatModel.name ?? 'unknown',
+      modelName: chatModel.getName(),
     });
     try {
       const toolsConfig: BindToolsInput[] = toolDefinitions.map((tool) => ({
@@ -137,7 +137,7 @@ export class ToolProviderService {
       this.listenerService.onResponse({
         requestId,
         content,
-        modelName: chatModel.name ?? 'unknown',
+        modelName: chatModel.getName(),
       });
       return { content, toolCalls };
     } catch (err) {
@@ -145,7 +145,7 @@ export class ToolProviderService {
         requestId,
         error: err,
         messages: fullMessages,
-        modelName: chatModel.name ?? 'unknown',
+        modelName: chatModel.getName(),
       });
       this.logger.error('chatWithTools failed:', err);
       throw err;

@@ -13,7 +13,7 @@ import { AiModule } from './ai/ai.module';
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'data/ai-code-helper.db',
+      database: 'data/vectors.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

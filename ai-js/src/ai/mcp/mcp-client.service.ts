@@ -30,27 +30,29 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
     logRequests: true,
     logResponses: true,
   };
+  private initialized = false;
 
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
-    this.apiKey = this.configService.get<string>('BIGMODULE_API_KEY', '');
+    this.apiKey = this.configService.get<string>('BIGMODEL_API_KEY', '');
     if (!this.apiKey) {
       this.logger.error(
-        'BIGMODULE_API_KEY is empty: https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
+        'BIGMODEL_API_KEY is empty: https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
       );
       return;
     }
     this.config.sseUrl = `https://open.bigmodel.cn/api/mcp/web_search/sse?Authorization=${this.apiKey}`;
-    this.setupFallbackTools();
-    this.logger.log('McpClientService initialized with fallback tools');
+    this.setupBuiltinTools();
+    this.logger.log('McpClientService initialized with builtin tools');
   }
 
   async onModuleDestroy() {
     this.mcpTools = [];
+    this.initialized = false;
   }
 
-  private setupFallbackTools() {
+  private setupBuiltinTools() {
     this.mcpTools = [
       {
         name: 'web_search',
@@ -59,6 +61,8 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
         execute: this.executeTool.bind(this),
       },
     ];
+    this.initialized = true;
+    this.logger.log('Web search MCP tool initialized');
   }
 
   getTools() {
@@ -87,7 +91,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       return 'Search query is required';
     }
     if (!this.apiKey) {
-      return 'BIGMODULE_API_KEY is empty: https://bigmodel.cn/usercenter/proj-mgmt/apikeys';
+      return 'BIGMODEL_API_KEY is empty: https://bigmodel.cn/usercenter/proj-mgmt/apikeys';
     }
     try {
       const response = await fetch(
@@ -133,5 +137,9 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       this.logger.error(`Web search failed: ${err.message}`);
       return `Web search failed: ${err.message}`;
     }
+  }
+
+  isInitialized() {
+    return this.initialized;
   }
 }

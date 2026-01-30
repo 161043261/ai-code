@@ -6,7 +6,7 @@ import { OllamaEmbeddings } from '@langchain/ollama';
 import { Embeddings } from '@langchain/core/embeddings';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { resolve } from 'path';
+import { join } from 'path';
 import { existsSync, readdirSync } from 'node:fs';
 import { readFileSync } from 'fs';
 
@@ -63,7 +63,7 @@ export class RagService implements OnModuleInit {
 
   async init() {
     try {
-      const docsPath = resolve(__dirname, './docs');
+      const docsPath = join(process.cwd(), './resources/docs/base');
       const docs = await this.loadDocuments(docsPath);
       if (docs.length === 0) {
         this.logger.warn('No documents for RAG');
@@ -107,7 +107,7 @@ export class RagService implements OnModuleInit {
     const files = readdirSync(docsPath);
     for (const file of files) {
       if (file.endsWith('.md') || file.endsWith('.txt')) {
-        const filePath = resolve(docsPath, file);
+        const filePath = join(docsPath, file);
         try {
           const content = readFileSync(filePath, 'utf-8');
           documents.push(

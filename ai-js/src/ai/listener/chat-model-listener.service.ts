@@ -44,18 +44,6 @@ export class ChatModelListenerService {
   private listeners: ChatModelListener[] = [];
   private requestStartTime = new Map<string, number>();
 
-  constructor() {
-    this.addListener(this.createDefaultListener());
-  }
-
-  addListener(listener: ChatModelListener) {
-    this.listeners.push(listener);
-  }
-
-  removeListener(listener: ChatModelListener) {
-    this.listeners = this.listeners.filter((item) => item !== listener);
-  }
-
   generateRequestId() {
     return String(Date.now());
   }
@@ -111,23 +99,5 @@ export class ChatModelListenerService {
         this.logger.error('ChatModelListenerService onError error', err);
       }
     }
-  }
-
-  private createDefaultListener(): ChatModelListener {
-    return {
-      onRequest: (context) => {
-        this.logger.log('ChatModelListenerService onRequest context', context);
-        const requestId = this.onRequest(context);
-        return requestId;
-      },
-      onResponse: (context) => {
-        this.logger.log('ChatModelListenerService onResponse context', context);
-        this.onResponse(context);
-      },
-      onError: (context) => {
-        this.logger.error('ChatModelListenerService onError context', context);
-        this.onError(context);
-      },
-    };
   }
 }
