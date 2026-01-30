@@ -1,17 +1,20 @@
 package com.github.tianchenghang.ai.tools;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
 
-@Slf4j
 public class CodeQuestionTool {
+  private static final Logger log = getLogger(CodeQuestionTool.class);
+
   @Tool(
       name = "CodeQuestionTool",
       value =
@@ -24,8 +27,7 @@ public class CodeQuestionTool {
     var questions = new ArrayList<String>();
     var encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
     var url = "https://leetcode.cn/search/?q=" + encodedKeyword;
-    log.info(
-        "Found relevant code questions from leetcode.cn for keyword: {}", keyword);
+    log.info("Found relevant code questions from leetcode.cn for keyword: {}", keyword);
     Document doc;
     try {
       doc = Jsoup.connect(url).userAgent("Mozilla/5.0").timeout(5000).get();

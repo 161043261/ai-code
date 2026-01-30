@@ -45,3 +45,10 @@ exit 0
   - [mcp.so](https://mcp.so/)
 - 护轨 Guardrail, 类似拦截器, 分为输入护轨和输出护轨, 例如调用 AI 前鉴权, 敏感词检测, 调用 AI 后记录日志
 - SSE 流式响应
+
+
+## Start
+
+```bash
+mvn spring-boot:run
+```

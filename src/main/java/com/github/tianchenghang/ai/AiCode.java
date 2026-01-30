@@ -1,16 +1,18 @@
 package com.github.tianchenghang.ai;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 public class AiCode {
   @Resource private ChatModel qwenChatModel;
+  private static final Logger log = getLogger(AiCode.class);
 
   private static final String SYSTEM_MESSAGE =
       """
