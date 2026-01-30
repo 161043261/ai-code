@@ -3,7 +3,9 @@
 ## git worktree
 
 ```bash
-git worktree add ../ai-code main
+git worktree add ../ai-code-dev dev
+git worktree list
+git worktree remove ../ai-code-dev
 ```
 
 .git/hooks/pre-commit
