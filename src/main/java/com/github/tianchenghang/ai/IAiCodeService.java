@@ -19,7 +19,7 @@ public interface IAiCodeService {
   record Report(String name, List<String> suggestionList) {}
 
   @SystemMessage(fromResource = "system-prompt.txt")
-  Report charForReport(String userMessage);
+  Report chatForReport(String userMessage);
 
   @SystemMessage(fromResource = "system-prompt.txt")
   Result<String> chatWithRag(String userMessage);

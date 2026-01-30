@@ -16,16 +16,16 @@ public class CodeQuestionTool {
       name = "CodeQuestionTool",
       value =
           """
-      Retrieves relevant code questions based on a keyword.
+      Find relevant code questions based on a keyword.
       Use this tool when the user asks for code questions.
       The input should be a clear search keyword.
       """)
-  public String searchInterviewQuestions(@P(value = "the keyword to search") String keyword) {
+  public String searchCodeQuestions(@P(value = "The keyword to search") String keyword) {
     var questions = new ArrayList<String>();
     var encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
     var url = "https://leetcode.cn/search/?q=" + encodedKeyword;
     log.info(
-        "Retrieves relevant code questions from leetcode.cn based on keyword: {}", keyword);
+        "Found relevant code questions from leetcode.cn for keyword: {}", keyword);
     Document doc;
     try {
       doc = Jsoup.connect(url).userAgent("Mozilla/5.0").timeout(5000).get();

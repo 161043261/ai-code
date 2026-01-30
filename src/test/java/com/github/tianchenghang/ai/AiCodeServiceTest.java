@@ -26,7 +26,7 @@ public class AiCodeServiceTest {
   @Test
   void chatWithReport() {
     var message = "你好, 我是一名前端程序员, 我想学习 Node.js 后端, 请制定学习计划";
-    var report = aiCodeService.charForReport(message);
+    var report = aiCodeService.chatForReport(message);
     System.out.println(report);
   }
 

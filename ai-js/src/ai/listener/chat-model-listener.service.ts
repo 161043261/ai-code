@@ -1,10 +1,10 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 
 // 请求上下文
 export interface ChatModelRequestContext {
   requestId: string;
-  messages: BaseMessage;
+  messages: BaseMessage[];
   modelName: string;
   timestamp: Date;
 }
@@ -26,20 +26,19 @@ export interface ChatModelResponseContext {
 // 错误上下文
 export interface ChatModelErrorContext {
   requestId: string;
-  error: Error;
-  message: BaseMessage[];
+  error: unknown;
+  messages: BaseMessage[];
   modelName: string;
   timestamp: Date;
 }
 
 export interface ChatModelListener {
-  onRequest(context: ChatModelRequestContext): void;
-
+  onRequest(context: ChatModelRequestContext): string;
   onResponse(context: ChatModelResponseContext): void;
-
   onError(context: ChatModelErrorContext): void;
 }
 
+@Injectable()
 export class ChatModelListenerService {
   private readonly logger = new Logger(ChatModelListenerService.name);
   private listeners: ChatModelListener[] = [];
@@ -76,6 +75,7 @@ export class ChatModelListenerService {
         this.logger.error('ChatModelListenerService onRequest error', err);
       }
     }
+    return requestId;
   }
 
   onResponse(
@@ -117,12 +117,16 @@ export class ChatModelListenerService {
     return {
       onRequest: (context) => {
         this.logger.log('ChatModelListenerService onRequest context', context);
+        const requestId = this.onRequest(context);
+        return requestId;
       },
       onResponse: (context) => {
         this.logger.log('ChatModelListenerService onResponse context', context);
+        this.onResponse(context);
       },
       onError: (context) => {
         this.logger.error('ChatModelListenerService onError context', context);
+        this.onError(context);
       },
     };
   }
