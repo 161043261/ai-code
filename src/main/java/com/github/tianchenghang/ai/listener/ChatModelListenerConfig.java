@@ -1,19 +1,16 @@
 package com.github.tianchenghang.ai.listener;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import dev.langchain4j.model.chat.listener.ChatModelErrorContext;
 import dev.langchain4j.model.chat.listener.ChatModelListener;
 import dev.langchain4j.model.chat.listener.ChatModelRequestContext;
 import dev.langchain4j.model.chat.listener.ChatModelResponseContext;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Slf4j
 @Configuration
 public class ChatModelListenerConfig {
-
-  private static final Logger log = getLogger(ChatModelListenerConfig.class);
 
   @Bean
   ChatModelListener chatModelListener() {
