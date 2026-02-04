@@ -10,11 +10,11 @@ export interface ChatModelRequestContext {
 }
 
 // 响应上下文
-export interface ChatModelResponseContext {
-  requestId: string;
+export interface ChatModelResponseContext extends Omit<
+  ChatModelRequestContext,
+  'messages'
+> {
   content: string;
-  modelName: string;
-  timestamp: Date;
   latencyMs: number;
   tokenUsage?: {
     promptTokens: number;
@@ -24,12 +24,8 @@ export interface ChatModelResponseContext {
 }
 
 // 错误上下文
-export interface ChatModelErrorContext {
-  requestId: string;
+export interface ChatModelErrorContext extends ChatModelRequestContext {
   error: unknown;
-  messages: BaseMessage[];
-  modelName: string;
-  timestamp: Date;
 }
 
 export interface ChatModelListener {

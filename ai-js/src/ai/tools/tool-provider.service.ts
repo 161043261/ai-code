@@ -9,34 +9,13 @@ import {
   HumanMessage,
   SystemMessage,
 } from '@langchain/core/messages';
-import { BindToolsInput } from '@langchain/core/language_models/chat_models';
-
-export interface ToolDefinition {
-  name: string;
-  description: string;
-  parameters: {
-    type: string;
-    properties: Record<string, { type: string; description: string }>;
-    required: string[];
-  };
-}
-
-export interface ToolCall {
-  id: string;
-  name: string;
-  args: Record<string, unknown>;
-}
+import { StructuredTool } from '@langchain/core/tools';
+import { ToolCall } from '@langchain/core/messages/tool';
 
 @Injectable()
 export class ToolProviderService {
   private readonly logger = new Logger(ToolProviderService.name);
-  private tools = new Map<
-    string,
-    {
-      definition: ToolDefinition;
-      handler: (args: Record<string, unknown>) => Promise<string>;
-    }
-  >();
+  private tools = new Map<string, StructuredTool>();
 
   constructor(
     private readonly chatModelService: ChatModelService,
@@ -48,36 +27,12 @@ export class ToolProviderService {
   }
 
   private registerBuiltinTools() {
-    const definition: ToolDefinition = {
-      name: 'CodeQuestionTool',
-      description: `
-        Find relevant code questions based on a keyword.
-        Use this tool when the user asks for code questions.
-        The input should be a clear search keyword.
-      `,
-      parameters: {
-        type: 'object',
-        properties: {
-          keyword: {
-            type: 'string',
-            description: 'The keyword to search',
-          },
-        },
-        required: ['keyword'],
-      },
-    };
-    const handler = async (args: Record<string, unknown>) => {
-      return this.codeQuestionTool.searchCodeQuestions(String(args.keyword));
-    };
-    this.registerTool(definition, handler);
+    this.registerTool(this.codeQuestionTool);
   }
 
-  registerTool(
-    definition: ToolDefinition,
-    handler: (args: Record<string, unknown>) => Promise<string>,
-  ): void {
-    this.tools.set(definition.name, { definition, handler });
-    this.logger.debug(`Tool registered: ${definition.name}`);
+  registerTool(tool: StructuredTool): void {
+    this.tools.set(tool.name, tool);
+    this.logger.debug(`Tool registered: ${tool.name}`);
   }
 
   async executeTool(
@@ -90,7 +45,7 @@ export class ToolProviderService {
     }
     this.logger.log(`Executing tool: ${name}`);
     try {
-      const result = await tool.handler(args);
+      const result = await tool.invoke(args);
       this.logger.log(`Tool ${name} completed`);
       return result;
     } catch (err) {
@@ -104,7 +59,7 @@ export class ToolProviderService {
     systemPrompt: string,
   ): Promise<{ content: string; toolCalls?: ToolCall[] }> {
     const chatModel = this.chatModelService.getChatModel();
-    const toolDefinitions = this.getAllToolDefinitions();
+    const toolsArray = this.getAllTools();
     const fullMessages: BaseMessage[] = [
       new SystemMessage(systemPrompt),
       ...messages,
@@ -114,17 +69,9 @@ export class ToolProviderService {
       modelName: chatModel.getName(),
     });
     try {
-      const toolsConfig: BindToolsInput[] = toolDefinitions.map((tool) => ({
-        type: 'function',
-        function: {
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.parameters,
-        },
-      }));
-      const modelWithTools = chatModel.bindTools?.(toolsConfig);
+      const modelWithTools = chatModel.bindTools?.(toolsArray);
       if (!modelWithTools) {
-        throw '';
+        throw new Error('Model does not support tools');
       }
       const response = await modelWithTools.invoke(fullMessages);
       const content = response.content.toString();
@@ -152,7 +99,7 @@ export class ToolProviderService {
     }
   }
 
-  getAllToolDefinitions(): ToolDefinition[] {
-    return Array.from(this.tools.values()).map((t) => t.definition);
+  getAllTools(): StructuredTool[] {
+    return Array.from(this.tools.values());
   }
 }

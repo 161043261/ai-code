@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-export interface IGuardrailResult {
+export interface GuardrailResult {
   safe: boolean;
   failures: string[];
 }
@@ -10,7 +10,7 @@ export class SafeInputGuardrail {
   private readonly logger = new Logger(SafeInputGuardrail.name);
   private readonly sensitiveWords = new Set(['fuck', 'fucker', 'motherfucker']);
 
-  validate(input: string): IGuardrailResult {
+  validate(input: string): GuardrailResult {
     const inputText = input.toLowerCase();
     let safe = true;
     let failures: string[] = [];

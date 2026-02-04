@@ -1,17 +1,36 @@
+import { StructuredTool } from '@langchain/core/tools';
 import { Injectable, Logger } from '@nestjs/common';
 import cheerio from 'cheerio';
+import { z } from 'zod';
+
+const CodeQuestionInputSchema = z.object({
+  keyword: z.string().describe('The keyword to search'),
+});
+
+type CodeQuestionInput = z.infer<typeof CodeQuestionInputSchema>;
 
 @Injectable()
-export class CodeQuestionTool {
+export class CodeQuestionTool extends StructuredTool<
+  typeof CodeQuestionInputSchema
+> {
   private readonly logger = new Logger(CodeQuestionTool.name);
 
-  async searchCodeQuestions(keyword: string): Promise<string> {
+  name = 'CodeQuestionTool';
+
+  description = `Find relevant code questions based on a keyword.
+Use this tool when the user asks for code questions.
+The input should be a clear search keyword.`;
+
+  schema = CodeQuestionInputSchema;
+
+  async _call(input: CodeQuestionInput): Promise<string> {
+    const { keyword } = input;
     const questions: string[] = [];
     const encodedKeyword = encodeURIComponent(keyword);
     const url = `https://leetcode.cn/search/?q=${encodedKeyword}`;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
+      setTimeout(() => {
         controller.abort();
       }, 5000);
       const response = await fetch(url, {
@@ -39,26 +58,5 @@ export class CodeQuestionTool {
       this.logger.error('Code question search failed:', err);
       return `Code question search failed: ${err.message}`;
     }
-  }
-
-  getToolDefinition() {
-    return {
-      name: 'CodeQuestionTool',
-      description: `
-        Find relevant code questions based on a keyword.
-        Use this tool when the user asks for code questions.
-        The input should be a clear search keyword.
-      `,
-      parameters: {
-        type: 'object',
-        properties: {
-          keyword: {
-            type: 'string',
-            description: 'The keyword to search',
-          },
-        },
-        required: ['keyword'],
-      },
-    };
   }
 }
