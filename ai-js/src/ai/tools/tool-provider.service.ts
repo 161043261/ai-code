@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { ChatModelService } from '../model/chat-model.service';
 import { ChatModelListenerService } from '../listener/chat-model-listener.service';
@@ -47,7 +48,7 @@ export class ToolProviderService {
     try {
       const result = await tool.invoke(args);
       this.logger.log(`Tool ${name} completed`);
-      return result;
+      return typeof result === 'string' ? result : JSON.stringify(result);
     } catch (err) {
       this.logger.error(`Tool ${name} failed:`, err);
       throw err;
@@ -74,7 +75,10 @@ export class ToolProviderService {
         throw new Error('Model does not support tools');
       }
       const response = await modelWithTools.invoke(fullMessages);
-      const content = response.content.toString();
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : JSON.stringify(response.content);
       const toolCalls: ToolCall[] =
         response.tool_calls?.map((item) => ({
           id: item.id ?? String(Date.now()),

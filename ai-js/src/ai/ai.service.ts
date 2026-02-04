@@ -6,10 +6,7 @@ import { CodeQuestionTool } from './tools/code-question-tool';
 import { ToolProviderService } from './tools/tool-provider.service';
 import { SafeInputGuardrail } from './guardrail/safe-input-guardrail';
 import { ChatMemoryService } from './memory/chat-memory.service';
-import {
-  ChatModelListener,
-  ChatModelListenerService,
-} from './listener/chat-model-listener.service';
+import { ChatModelListenerService } from './listener/chat-model-listener.service';
 import {
   StructuredOutputService,
   Report,
@@ -107,7 +104,10 @@ export class AiService implements OnModuleInit {
     let fullResponse = '';
     try {
       for await (const chunk of stream) {
-        const content = chunk.content.toString();
+        const content =
+          typeof chunk.content === 'string'
+            ? chunk.content
+            : JSON.stringify(chunk.content);
         if (content) {
           fullResponse += content;
           yield content;
@@ -149,7 +149,10 @@ export class AiService implements OnModuleInit {
     });
     try {
       const response = await chatModel.invoke(messages);
-      const content = response.content.toString();
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : JSON.stringify(response.content);
       this.listenerService.onResponse({
         requestId,
         content,
@@ -190,8 +193,8 @@ export class AiService implements OnModuleInit {
       };
     }
     const relevantDocs = await this.ragService.retrieve(userMessage);
-    const sources = relevantDocs.map(
-      (doc) => doc.metadata.source ?? doc.metadata.file_name ?? 'unknown',
+    const sources = relevantDocs.map((doc) =>
+      String(doc.metadata.source ?? doc.metadata.file_name ?? 'unknown'),
     );
     const contextMessage =
       relevantDocs.length > 0
@@ -208,7 +211,10 @@ export class AiService implements OnModuleInit {
     });
     try {
       const response = await chatModel.invoke(messages);
-      const content = response.content.toString();
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : JSON.stringify(response.content);
       this.listenerService.onResponse({
         requestId,
         content,
@@ -273,6 +279,8 @@ export class AiService implements OnModuleInit {
       new HumanMessage(userMessage),
     ];
     const response = await chatModel.invoke(messages);
-    return response.content.toString();
+    return typeof response.content === 'string'
+      ? response.content
+      : JSON.stringify(response.content);
   }
 }

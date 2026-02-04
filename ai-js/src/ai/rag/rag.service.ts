@@ -4,8 +4,8 @@ import { Document } from '@langchain/core/documents';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { OllamaEmbeddings } from '@langchain/ollama';
 import { Embeddings } from '@langchain/core/embeddings';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { MemoryVectorStore } from '@langchain/classic/vectorstores/memory';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { join } from 'path';
 import { existsSync, readdirSync } from 'node:fs';
 import { readFileSync } from 'fs';
@@ -64,7 +64,7 @@ export class RagService implements OnModuleInit {
   async init() {
     try {
       const docsPath = join(process.cwd(), './resources/docs/base');
-      const docs = await this.loadDocuments(docsPath);
+      const docs = this.loadDocuments(docsPath);
       if (docs.length === 0) {
         this.logger.warn('No documents for RAG');
         return;
@@ -78,9 +78,10 @@ export class RagService implements OnModuleInit {
       const splitDocs = await splitter.splitDocuments(docs);
       // Transform: add file name to content for better search
       const transformedDocs = splitDocs.map((doc) => {
-        const fileName = doc.metadata.source?.split('/').pop() || 'unknown';
+        const filename =
+          String(doc.metadata.source)?.split('/').pop() || 'unknown';
         return new Document({
-          pageContent: `${fileName}\n${doc.pageContent}`,
+          pageContent: `${filename}\n${doc.pageContent}`,
           metadata: doc.metadata,
         });
       });
@@ -98,7 +99,7 @@ export class RagService implements OnModuleInit {
     }
   }
 
-  private async loadDocuments(docsPath: string): Promise<Document[]> {
+  private loadDocuments(docsPath: string): Document[] {
     const documents: Document[] = [];
     if (!existsSync(docsPath)) {
       this.logger.warn(`Documents path not found: ${docsPath}`);
@@ -148,8 +149,8 @@ export class RagService implements OnModuleInit {
 
       this.logger.debug(`Retrieved ${filteredResults.length} documents`);
       return filteredResults;
-    } catch (error) {
-      this.logger.error(`Retrieval failed: ${error.message}`);
+    } catch (err) {
+      this.logger.error('Retrieval error:', err);
       return [];
     }
   }

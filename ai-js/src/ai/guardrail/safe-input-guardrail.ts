@@ -12,8 +12,8 @@ export class SafeInputGuardrail {
 
   validate(input: string): GuardrailResult {
     const inputText = input.toLowerCase();
-    let safe = true;
-    let failures: string[] = [];
+    const safe = true;
+    const failures: string[] = [];
     const words = inputText.split(/\w+/);
     for (const word of words) {
       if (this.sensitiveWords.has(word)) {

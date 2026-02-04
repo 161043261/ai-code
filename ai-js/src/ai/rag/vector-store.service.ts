@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Injectable,
   Logger,
@@ -6,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Document } from '@langchain/core/documents';
 import { Embeddings } from '@langchain/core/embeddings';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import Sqlite3, { Database } from 'better-sqlite3';
 import { ConfigService } from '@nestjs/config';
 import { OllamaEmbeddings } from '@langchain/ollama';
@@ -110,7 +111,7 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
         'CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents (created_at);',
       );
 
-      this.loadDocumentsFromDirectory(
+      await this.loadDocumentsFromDirectory(
         join(process.cwd(), './resources/docs/base'),
       );
 
@@ -164,7 +165,7 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
     const splitDocs = await splitter.splitDocuments(docs);
     // Transform: add file name to content for better search
     const transformedDocs = splitDocs.map((doc) => {
-      const filename = doc.metadata.file_name ?? 'unknown';
+      const filename = String(doc.metadata.file_name ?? 'unknown');
       return new Document({
         pageContent: `${filename}\n${doc.pageContent}`,
         metadata: doc.metadata,
@@ -297,7 +298,7 @@ export class VectorStoreService implements OnModuleInit, OnModuleDestroy {
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
-  async clear(): Promise<void> {
+  clear() {
     if (!this.db) {
       return;
     }

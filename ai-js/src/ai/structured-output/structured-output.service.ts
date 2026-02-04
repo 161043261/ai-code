@@ -34,16 +34,20 @@ export class StructuredOutputService {
 只返回 JSON, 不要返回其他内容
     `;
     const messages = [
-      new SystemMessage(systemPrompt),
+      new SystemMessage(`${systemPrompt}\n${structuredPrompt}`),
       new HumanMessage(userMessage),
     ];
     try {
       const response = await chatModel.invoke(messages);
-      const content = response.content.toString();
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : JSON.stringify(response.content);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const parsed = JSON.parse(jsonMatch[0]);
       const validated = ReportSchema.parse(parsed);
       this.logger.log(`Generated report: ${validated.name}`);
@@ -75,11 +79,15 @@ export class StructuredOutputService {
       new HumanMessage(userMessage),
     ];
     const response = await chatModel.invoke(messages);
-    const content = response.content.toString();
+    const content =
+      typeof response.content === 'string'
+        ? response.content
+        : JSON.stringify(response.content);
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No JSON found in response');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = JSON.parse(jsonMatch[0]);
     return schema.parse(parsed);
   }

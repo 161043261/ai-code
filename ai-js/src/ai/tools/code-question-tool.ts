@@ -55,8 +55,8 @@ The input should be a clear search keyword.`;
       );
       return questions.join('\n') ?? 'No questions found';
     } catch (err) {
-      this.logger.error('Code question search failed:', err);
-      return `Code question search failed: ${err.message}`;
+      this.logger.error('Code question search error:', err);
+      return `Code question search error`;
     }
   }
 }

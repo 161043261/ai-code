@@ -34,7 +34,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     this.apiKey = this.configService.get<string>('BIGMODEL_API_KEY', '');
     if (!this.apiKey) {
       this.logger.error(
@@ -47,7 +47,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('McpClientService initialized with builtin tools');
   }
 
-  async onModuleDestroy() {
+  onModuleDestroy() {
     this.mcpTools = [];
     this.initialized = false;
   }
@@ -58,6 +58,7 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
         name: 'web_search',
         description:
           'Search the web for real-time information using BigModel web search',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         execute: this.executeTool.bind(this),
       },
     ];
@@ -134,8 +135,8 @@ export class McpClientService implements OnModuleInit, OnModuleDestroy {
       }
       return data.choices?.[0]?.message?.content ?? 'No results found';
     } catch (err) {
-      this.logger.error(`Web search failed: ${err.message}`);
-      return `Web search failed: ${err.message}`;
+      this.logger.error('Web search error:', err);
+      return 'Web search error';
     }
   }
 
