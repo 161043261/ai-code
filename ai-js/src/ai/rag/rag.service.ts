@@ -108,14 +108,14 @@ export class RagService implements OnModuleInit {
     const files = readdirSync(docsPath);
     for (const file of files) {
       if (file.endsWith('.md') || file.endsWith('.txt')) {
-        const filePath = join(docsPath, file);
+        const filepath = join(docsPath, file);
         try {
-          const content = readFileSync(filePath, 'utf-8');
+          const content = readFileSync(filepath, 'utf-8');
           documents.push(
             new Document({
               pageContent: content,
               metadata: {
-                source: filePath,
+                source: filepath,
                 file_name: file,
               },
             }),
